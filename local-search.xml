@@ -5,6 +5,19 @@
   
   <entry>
     <title></title>
+    <link href="/2024/07/13/%E7%89%A2%E7%89%A2%E8%AE%B0%E4%BD%8F%EF%BC%8C%E9%80%9D%E8%80%85%E4%B8%BA%E5%A4%A7/"/>
+    <url>/2024/07/13/%E7%89%A2%E7%89%A2%E8%AE%B0%E4%BD%8F%EF%BC%8C%E9%80%9D%E8%80%85%E4%B8%BA%E5%A4%A7/</url>
+    
+    <content type="html"><![CDATA[<p>题目源码是这样的<br><img src="https://cdn.nlark.com/yuque/0/2024/png/42549390/1718591895523-72314131-d51b-4506-93c8-213659fa43c1.png#averageHue=%23f5f7f5&clientId=u2a086d35-42c3-4&from=paste&height=692&id=u6f4589f3&originHeight=1038&originWidth=997&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=102841&status=done&style=none&taskId=uf6bab5c0-17fa-49b5-861c-a9b0eaff906&title=&width=664.6666666666666" alt="image.png"><br>这里有几个限制<br>1.注释<br>2.后面的脏数据<br>3.传入cmd的长度要在13个字符以内<br>4.限制命令执行的字符</p><p>首先我们先过注释符<br>只要加一个换行符就能绕过了，%0a<br>然后是脏数据，加个 ; 和注释 # 即可绕过，注意传注释符的时候要url编一下码就是 ;%23<br>我们限制已经消耗掉了三个字符，还有9个字符可用，9个字符，常规的方法是很难构造了，但是<br>我们有个反引号<br><img src="https://cdn.nlark.com/yuque/0/2024/png/42549390/1718592017317-cc8d2edf-5da6-4721-ae2d-1df7ea295da1.png#averageHue=%23f1f6f3&clientId=u2a086d35-42c3-4&from=paste&height=103&id=u5e6e7314&originHeight=154&originWidth=1196&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=2052&status=done&style=none&taskId=u0a3ad47d-efac-4022-83ce-4e32629369f&title=&width=797.3333333333334" alt="image.png"></p><p>php里的反引号调用的是方法 shell_exec() ，用于执行系统命令，那么我们就可以直接在里面<br>执行命令了…吗？<br>虽然可以执行执行命令比如我们(‘.’是当前目录)<br><img src="https://cdn.nlark.com/yuque/0/2024/png/42549390/1718592030536-16b6ab04-78b1-4203-ba82-d56723c889fc.png#averageHue=%23e8eae8&clientId=u2a086d35-42c3-4&from=paste&height=108&id=u63b76eab&originHeight=162&originWidth=1221&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=3990&status=done&style=none&taskId=u048d6163-68cb-4e67-83e1-e6efa6e4276&title=&width=814" alt="image.png"></p><p>不多不少刚刚好9个字符能把根目录里的东西复制过来，然后直接访问静态资源flag就能直接读取 了，但是非常可惜，会触发”肘死你”或者”what can i say”，就没有办法拯救牢大了 那么我们换一种思路，我们用另一个变量往里面传参，那么就能不受长度的限制自由构造了<br><img src="https://cdn.nlark.com/yuque/0/2024/png/42549390/1718592145911-e7ec6dfa-c2f1-4524-9118-0d8e4282adf9.png#averageHue=%23dbf5f8&clientId=u2a086d35-42c3-4&from=paste&height=96&id=u546acd20&originHeight=144&originWidth=1194&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=4057&status=done&style=none&taskId=u5892aef5-6f44-4a06-b0a6-f27e24d566d&title=&width=796" alt="image.png"></p><p>我们只要往1传参就能传到里面去，就能自由执行命令了，但是要注意的是，这种方法是无回显 的，无回显也问题不大，用上面的方法把flag复制一下然后直接访问就行，或者直接弹shell<br><img src="https://cdn.nlark.com/yuque/0/2024/png/42549390/1718592454280-df556897-95a6-4915-9ea9-354898a653fe.png#averageHue=%23f1f7f7&clientId=u2a086d35-42c3-4&from=paste&height=96&id=u22e37398&originHeight=144&originWidth=1196&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=10800&status=done&style=none&taskId=u165a9c36-ac0d-4ecb-b76a-a241a264cec&title=&width=797.3333333333334" alt="image.png"></p><p>用 ‘’ 来绕过过滤的 cp ，但是我们可以看到通配符是给过滤了的，我们就可以引出第二个技巧， [a-z] ，linux里用中括号可以根据ascii码来匹配里面的字符集， [a-z] 就是匹配任何小写字母a 到z中的一个字符，那么我们就能简单的构造出想要的字符了 payload:<br><img src="https://cdn.nlark.com/yuque/0/2024/png/42549390/1718592499497-1b7823ea-5f76-41d7-b2de-ed34f251f0c4.png#averageHue=%23f2f0d9&clientId=u2a086d35-42c3-4&from=paste&height=155&id=u4d0aec71&originHeight=232&originWidth=1193&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=30497&status=done&style=none&taskId=uc09f2c04-8c45-469c-9353-87c0e015001&title=&width=795.3333333333334" alt="image.png"></p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title></title>
     <link href="/2024/07/13/1page/"/>
     <url>/2024/07/13/1page/</url>
     
